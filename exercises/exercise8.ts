@@ -1,4 +1,4 @@
-import { logError } from "./logger.js"
+import { logError } from "./logger.js";
 
 //============================================================================
 // EXERCISE 8: The Email Validation Gap
@@ -34,28 +34,39 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise8_EmailValidation() {
-	type Customer = {
-		name: string
-		email: string
-	}
+  type Email = string & { readonly __brand: unique symbol };
 
-	// TODO: Replace `string` with a branded Email type backed by parseEmail().
-	// After this change, constructing a Customer with an invalid email will
-	// throw at runtime, and the type system prevents passing raw strings
-	// where an Email is expected.
+  function parseEmail(raw: string): Email {
+    const trimmed = raw.trim();
+    if (trimmed.length === 0) throw new Error("Email cannot be empty");
+    // Basic structural check: local@domain.tld
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed))
+      throw new Error(`Invalid email format: "${raw}"`);
+    return trimmed.toLowerCase() as Email;
+  }
 
-	// All these pass TypeScript checking
-	const customers: Customer[] = [
-		{ name: "Alice", email: "alice@example.com" }, // Valid
-		{ name: "Bob", email: "not-an-email" }, // Silent bug!
-		{ name: "Charlie", email: "charlie@@double.com" }, // Silent bug!
-		{ name: "Diana", email: "@no-local-part.com" }, // Silent bug!
-		{ name: "Eve", email: "eve@" }, // Silent bug!
-		{ name: "Frank", email: " " }, // Silent bug! Just whitespace
-	]
+  type Customer = {
+    name: string;
+    email: Email;
+  };
 
-	logError(8, "Invalid emails accepted - no domain validation", {
-		customers,
-		issue: "Email is just a string - no validation of email format!",
-	})
+  // TODO: Replace `string` with a branded Email type backed by parseEmail().
+  // After this change, constructing a Customer with an invalid email will
+  // throw at runtime, and the type system prevents passing raw strings
+  // where an Email is expected.
+
+  // All these pass TypeScript checking
+  const customers: Customer[] = [
+    { name: "Alice", email: parseEmail("alice@example.com") }, // Valid
+    { name: "Bob", email: parseEmail("not-an-email") }, // Silent bug!
+    { name: "Charlie", email: parseEmail("charlie@@double.com") }, // Silent bug!
+    { name: "Diana", email: parseEmail("@no-local-part.com") }, // Silent bug!
+    { name: "Eve", email: parseEmail("eve@") }, // Silent bug!
+    { name: "Frank", email: parseEmail(" ") }, // Silent bug! Just whitespace
+  ];
+
+  logError(8, "Invalid emails accepted - no domain validation", {
+    customers,
+    issue: "Email is just a string - no validation of email format!",
+  });
 }
