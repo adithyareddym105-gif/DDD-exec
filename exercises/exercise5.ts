@@ -1,4 +1,4 @@
-import { logError } from "./logger.js"
+import { logError } from "./logger.js";
 
 //============================================================================
 // EXERCISE 5: The Identity Crisis - Order IDs
@@ -32,42 +32,50 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise5_IdentityCrisis() {
-	type Order = {
-		orderId: string // Just a string - could be anything!
-		customerName: string
-		total: number
-	}
+  type OrderId = string & { readonly __brand: unique symbol };
 
-	// TODO: Replace `string` with an OrderId branded type.
-	// Use a factory function that enforces a consistent format.
-	// Consider who is responsible for uniqueness (hint: Repository pattern).
+  function createOrderId(raw: string): OrderId {
+    if (!/^ORD-\d{5,}$/.test(raw))
+      throw new Error("OrderId must match ORD-XXXXX format");
+    return raw as OrderId;
+  }
 
-	// What makes a valid order ID? Nothing enforced!
-	const orders: Order[] = [
-		{
-			orderId: "", // Silent bug! Empty ID
-			customerName: "Alice",
-			total: 25,
-		},
-		{
-			orderId: "12345", // Is this valid?
-			customerName: "Bob",
-			total: 30,
-		},
-		{
-			orderId: "12345", // Silent bug! Duplicate ID
-			customerName: "Charlie",
-			total: 15,
-		},
-		{
-			orderId: "not-a-number", // Silent bug! Inconsistent format
-			customerName: "Diana",
-			total: 20,
-		},
-	]
+  type Order = {
+    orderId: OrderId; // Just a string - could be anything!
+    customerName: string;
+    total: number;
+  };
 
-	logError(5, "Order ID chaos - duplicates, empty, inconsistent formats", {
-		orders,
-		issue: "Order IDs have no enforced format or uniqueness!",
-	})
+  // TODO: Replace `string` with an OrderId branded type.
+  // Use a factory function that enforces a consistent format.
+  // Consider who is responsible for uniqueness (hint: Repository pattern).
+
+  // What makes a valid order ID? Nothing enforced!
+  const orders: Order[] = [
+    {
+      orderId: createOrderId(""), // Silent bug! Empty ID
+      customerName: "Alice",
+      total: 25,
+    },
+    {
+      orderId: createOrderId("12345"), // Is this valid?
+      customerName: "Bob",
+      total: 30,
+    },
+    {
+      orderId: createOrderId("12345"), // Silent bug! Duplicate ID
+      customerName: "Charlie",
+      total: 15,
+    },
+    {
+      orderId: createOrderId("not-a-number"), // Silent bug! Inconsistent format
+      customerName: "Diana",
+      total: 20,
+    },
+  ];
+
+  logError(5, "Order ID chaos - duplicates, empty, inconsistent formats", {
+    orders,
+    issue: "Order IDs have no enforced format or uniqueness!",
+  });
 }
