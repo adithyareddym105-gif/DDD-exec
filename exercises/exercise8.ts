@@ -56,17 +56,24 @@ export function exercise8_EmailValidation() {
   // where an Email is expected.
 
   // All these pass TypeScript checking
-  const customers: Customer[] = [
-    { name: "Alice", email: parseEmail("alice@example.com") }, // Valid
-    { name: "Bob", email: parseEmail("not-an-email") }, // Silent bug!
-    { name: "Charlie", email: parseEmail("charlie@@double.com") }, // Silent bug!
-    { name: "Diana", email: parseEmail("@no-local-part.com") }, // Silent bug!
-    { name: "Eve", email: parseEmail("eve@") }, // Silent bug!
-    { name: "Frank", email: parseEmail(" ") }, // Silent bug! Just whitespace
+  const testCases: Array<{ name: string; raw: string }> = [
+    { name: "Alice",   raw: "alice@example.com" },    // Valid
+    { name: "Bob",     raw: "not-an-email" },          // Silent bug!
+    { name: "Charlie", raw: "charlie@@double.com" },   // Silent bug!
+    { name: "Diana",   raw: "@no-local-part.com" },    // Silent bug!
+    { name: "Eve",     raw: "eve@" },                  // Silent bug!
+    { name: "Frank",   raw: " " },                     // Silent bug! Just whitespace
   ];
 
-  logError(8, "Invalid emails accepted - no domain validation", {
-    customers,
-    issue: "Email is just a string - no validation of email format!",
-  });
+  for (const { name, raw } of testCases) {
+    try {
+      const customer: Customer = { name, email: parseEmail(raw) };
+      logError(8, "Invalid emails accepted - no domain validation", {
+        customer,
+        issue: "Email is just a string - no validation of email format!",
+      });
+    } catch (e: unknown) {
+      console.log(`parseEmail("${raw}") correctly rejected:`, (e as Error).message);
+    }
+  }
 }

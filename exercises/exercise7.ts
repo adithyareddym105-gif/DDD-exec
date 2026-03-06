@@ -71,6 +71,7 @@ export function exercise7_CurrencyConfusion() {
       return `$${(this.cents / 100).toFixed(2)}`;
     }
   }
+
   type MenuItem = {
     name: string;
     price: Money; // In what currency? Cents? Dollars?
@@ -78,25 +79,29 @@ export function exercise7_CurrencyConfusion() {
 
   const burger: MenuItem = {
     name: "Burger",
-    price: Money.fromDollars(12.5, "USD"), // Is this $12.50 or 12.5 cents?
+    price: Money.fromDollars(12.5, "USD"),
   };
 
   const pizza: MenuItem = {
     name: "Pizza",
-    price: Money.fromDollars(1850, "EUR"), // Is this $18.50 or $1850?
+    price: Money.fromDollars(18.5, "EUR"), // Is this $18.50 or $1850?
   };
 
   // TODO: Replace `number` with a Money Value Object.
   // Force a single canonical representation (e.g., cents) so that
   // adding burger.price + pizza.price always means the same thing.
 
-  // Calculations produce unexpected results
-  const total = burger.price.add(pizza.price); // 12.5 + 1850 = 1862.5
-  const formattedTotal = total.format(); // $1862.50 ??
+  // Calculations produce unexpected results when currencies differ
+  try {
+    const total = burger.price.add(pizza.price); // USD + EUR should throw
+    const formattedTotal = total.format();
 
-  logError(7, "Currency unit confusion leads to calculation errors", {
-    items: [burger, pizza],
-    calculatedTotal: formattedTotal,
-    issue: "Are prices in dollars or cents? TypeScript doesn't know!",
-  });
+    logError(7, "Currency unit confusion leads to calculation errors", {
+      items: [burger, pizza],
+      calculatedTotal: formattedTotal,
+      issue: "Are prices in dollars or cents? TypeScript doesn't know!",
+    });
+  } catch (e: unknown) {
+    console.log("Mixed currency addition correctly rejected:", (e as Error).message);
+  }
 }

@@ -26,7 +26,8 @@ import { logError } from "./logger.js";
 type Quantity = number & { readonly __brand: unique symbol };
 
 function createQuantity(amount: number): Quantity {
-  if (amount < 1) throw new Error("Quantity cannot be negative");
+  if (!Number.isInteger(amount)) throw new Error("Quantity must be a whole number");
+  if (amount <= 0) throw new Error("Quantity cannot be negative");
   if (amount > 1_000) throw new Error("Exceeds business limit");
   return amount as Quantity;
 }
@@ -38,34 +39,50 @@ export function exercise2_PrimitiveQuantity() {
     pricePerUnit: number;
   };
 
-  const order: Order = {
-    itemName: "Pizza",
-    quantity: -3, // Silent bug! Negative quantity
-    pricePerUnit: 15,
-  };
-
   // TODO: Replace `number` with a Quantity branded type.
   // Both of the bugs below should become impossible:
   //   quantity: -3       // <-- negative
   //   quantity: 50000    // <-- exceeds business limit
 
-  const total = order.quantity * order.pricePerUnit;
-  logError(2, "Negative quantity allowed - restaurant owes customer money?", {
-    order,
-    calculatedTotal: total,
-    issue: "Quantity should be a positive integer!",
-  });
-
-  // Another silent bug - absurd quantity
-  const bulkOrder: Order = {
-    itemName: "Coffee",
-    quantity: createQuantity(50000), // Silent bug! Unrealistic quantity
-    pricePerUnit: 3,
+  //  Valid order — no error expected
+  const order: Order = {
+    itemName: "Pizza",
+    quantity: createQuantity(3),
+    pricePerUnit: 15,
   };
+  const total = order.quantity * order.pricePerUnit;
+  console.log(` Valid order: ${order.itemName} × ${order.quantity} = $${total}`);
 
-  logError(2, "Absurd quantity accepted without validation", {
-    order: bulkOrder,
-    calculatedTotal: bulkOrder.quantity * bulkOrder.pricePerUnit,
-    issue: "Should we really accept an order for 50,000 coffees?",
-  });
+  //  Silent bug — negative quantity should be impossible
+  try {
+    const badOrder: Order = {
+      itemName: "Pizza",
+      quantity: createQuantity(-3), // <-- negative
+      pricePerUnit: 15,
+    };
+    const badTotal = badOrder.quantity * badOrder.pricePerUnit;
+    logError(2, "Negative quantity allowed - restaurant owes customer money?", {
+      order: badOrder,
+      calculatedTotal: badTotal,
+      issue: "Quantity should be a positive integer!",
+    });
+  } catch (e: unknown) {
+    console.log(" Negative quantity correctly rejected:", (e as Error).message);
+  }
+
+  //  Another silent bug — absurd quantity should be rejected
+  try {
+    const bulkOrder: Order = {
+      itemName: "Coffee",
+      quantity: createQuantity(50_000), // <-- exceeds business limit
+      pricePerUnit: 3,
+    };
+    logError(2, "Absurd quantity accepted without validation", {
+      order: bulkOrder,
+      calculatedTotal: bulkOrder.quantity * bulkOrder.pricePerUnit,
+      issue: "Should we really accept an order for 50,000 coffees?",
+    });
+  } catch (e: unknown) {
+    console.log(" Absurd quantity correctly rejected:", (e as Error).message);
+  }
 }

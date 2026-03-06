@@ -61,30 +61,36 @@ export function exercise3_StringConfusion() {
     phone: Phone;
   };
 
-  // TypeScript sees all strings as the same!
-  const customer: Customer = {
-    name: "john@example.com", // Silent bug! Email in name field
-    email: "John Doe", // Silent bug! Name in email field
-    phone: "555-PIZZA", // Silent bug! Letters in phone field
-  };
-
   // TODO: Create separate branded types (Email, Phone, CustomerName) so
   // that swapping values between fields becomes a compile-time error.
 
-  logError(3, "Fields mixed up - all are strings, TypeScript doesn't care", {
-    customer,
-    issue: "Email, phone, and name are all 'string' - no semantic distinction!",
-  });
+  // Silent bug! Email in name field — createName should reject email-like strings
+  try {
+    const customer: Customer = {
+      name: createName("john@example.com"), // Silent bug! Email in name field
+      email: createEmail("John Doe"),        // Silent bug! Name in email field
+      phone: createPhone("555-PIZZA"),       // Silent bug! Letters in phone field
+    };
+    logError(3, "Fields mixed up - all are strings, TypeScript doesn't care", {
+      customer,
+      issue: "Email, phone, and name are all 'string' - no semantic distinction!",
+    });
+  } catch (e: unknown) {
+    console.log("Fields-mixed-up correctly rejected:", (e as Error).message);
+  }
 
   // Even worse - empty strings pass validation
-  const emptyCustomer: Customer = {
-    name: createName(""),
-    email: createEmail(""),
-    phone: createPhone(""),
-  };
-
-  logError(3, "Empty strings accepted everywhere", {
-    customer: emptyCustomer,
-    issue: "Required fields should not be empty!",
-  });
+  try {
+    const emptyCustomer: Customer = {
+      name: createName(""),
+      email: createEmail(""),
+      phone: createPhone(""),
+    };
+    logError(3, "Empty strings accepted everywhere", {
+      customer: emptyCustomer,
+      issue: "Required fields should not be empty!",
+    });
+  } catch (e: unknown) {
+    console.log("Empty strings correctly rejected:", (e as Error).message);
+  }
 }

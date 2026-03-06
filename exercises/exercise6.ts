@@ -68,40 +68,50 @@ export function exercise6_TemporalLogic() {
       return hour >= this.opens || hour < this.closes;
     }
   }
+
   type Restaurant = {
     name: string;
     hours: OperatingHours;
-  };
-
-  const restaurant: Restaurant = {
-    name: "Joe's Diner",
-    hours: OperatingHours.create(22, 6),
-  };
-
-  // Simple check fails for overnight restaurants
-  const isOpen = (hour: number): boolean => {
-    return hour >= restaurant.opensAt && hour <= restaurant.closesAt;
   };
 
   // TODO: Replace the raw numbers with an OperatingHours Value Object.
   // Move the isOpen logic INSIDE the Value Object so it correctly handles
   // overnight spans and rejects invalid hours at construction time.
 
-  logError(6, "Operating hours logic broken for overnight restaurants", {
-    restaurant,
-    testHour: 2, // 2 AM should be open
-    isOpenCalculated: isOpen(2), // Returns false incorrectly
-    issue: "Simple comparison fails when hours cross midnight!",
-  });
+  try {
+    const restaurant: Restaurant = {
+      name: "Joe's Diner",
+      hours: OperatingHours.create(22, 6),
+    };
+
+    const testHour = createHour(2);
+    const isOpenAt2 = restaurant.hours.isOpenAt(testHour);
+
+    if (!isOpenAt2) {
+      logError(6, "Operating hours logic broken for overnight restaurants", {
+        restaurant,
+        testHour: 2, // 2 AM should be open
+        isOpenCalculated: isOpenAt2, // Returns false incorrectly
+        issue: "Simple comparison fails when hours cross midnight!",
+      });
+    } else {
+      console.log("Overnight hours correctly handled: open at 2 AM =", isOpenAt2);
+    }
+  } catch (e: unknown) {
+    console.log("Operating hours error:", (e as Error).message);
+  }
 
   // Also accepts invalid hours
-  const brokenRestaurant: Restaurant = {
-    name: "Broken Cafe",
-    hours: OperatingHours.create(25, -5),
-  };
-
-  logError(6, "Invalid hours accepted without validation", {
-    restaurant: brokenRestaurant,
-    issue: "Hours should be 0-23 only!",
-  });
+  try {
+    const brokenRestaurant: Restaurant = {
+      name: "Broken Cafe",
+      hours: OperatingHours.create(25, -5),
+    };
+    logError(6, "Invalid hours accepted without validation", {
+      restaurant: brokenRestaurant,
+      issue: "Hours should be 0-23 only!",
+    });
+  } catch (e: unknown) {
+    console.log("Invalid hours correctly rejected:", (e as Error).message);
+  }
 }

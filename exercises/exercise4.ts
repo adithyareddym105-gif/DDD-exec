@@ -70,32 +70,40 @@ export function exercise4_BusinessRuleViolation() {
   // capacity constraints. The constructor/factory should reject invalid
   // states, and mutation should go through guarded methods (seatGuests).
 
-  const table = Table.create(5, 4);
-  table.seatGuests(7);
+  try {
+    const table = Table.create(5, 4);
+    table.seatGuests(7);
 
-  // const table: Table = {
-  // 	tableNumber: 5,
-  // 	capacity: 4,
-  // 	currentGuests: 7, // Silent bug! Overcapacity
-  // }
+    // const table: Table = {
+    // 	tableNumber: 5,
+    // 	capacity: 4,
+    // 	currentGuests: 7, // Silent bug! Overcapacity
+    // }
 
-  logError(4, "Table overcapacity - business rule violated", {
-    table,
-    issue: "currentGuests should never exceed capacity!",
-  });
+    logError(4, "Table overcapacity - business rule violated", {
+      table,
+      issue: "currentGuests should never exceed capacity!",
+    });
+  } catch (e: unknown) {
+    console.log("Overcapacity correctly rejected:", (e as Error).message);
+  }
 
-  const emptyTable = Table.create(3, 6);
-  table.seatGuests(-2);
+  try {
+    const emptyTable = Table.create(3, 6);
+    emptyTable.seatGuests(-2);
 
-  // Another violation - negative guests
-  // const emptyTable: Table = {
-  // 	tableNumber: 3,
-  // 	capacity: 6,
-  // 	currentGuests: -2, // Silent bug! Negative guests
-  // }
+    // Another violation - negative guests
+    // const emptyTable: Table = {
+    // 	tableNumber: 3,
+    // 	capacity: 6,
+    // 	currentGuests: -2, // Silent bug! Negative guests
+    // }
 
-  logError(4, "Negative guest count - impossible in real world", {
-    table: emptyTable,
-    issue: "Guests cannot be negative!",
-  });
+    logError(4, "Negative guest count - impossible in real world", {
+      table: emptyTable,
+      issue: "Guests cannot be negative!",
+    });
+  } catch (e: unknown) {
+    console.log("Negative guest count correctly rejected:", (e as Error).message);
+  }
 }

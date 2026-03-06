@@ -51,31 +51,26 @@ export function exercise5_IdentityCrisis() {
   // Consider who is responsible for uniqueness (hint: Repository pattern).
 
   // What makes a valid order ID? Nothing enforced!
-  const orders: Order[] = [
-    {
-      orderId: createOrderId(""), // Silent bug! Empty ID
-      customerName: "Alice",
-      total: 25,
-    },
-    {
-      orderId: createOrderId("12345"), // Is this valid?
-      customerName: "Bob",
-      total: 30,
-    },
-    {
-      orderId: createOrderId("12345"), // Silent bug! Duplicate ID
-      customerName: "Charlie",
-      total: 15,
-    },
-    {
-      orderId: createOrderId("not-a-number"), // Silent bug! Inconsistent format
-      customerName: "Diana",
-      total: 20,
-    },
+  const invalidCases: Array<{ raw: string; customerName: string; total: number }> = [
+    { raw: "",              customerName: "Alice",   total: 25 }, // Silent bug! Empty ID
+    { raw: "12345",         customerName: "Bob",     total: 30 }, // Is this valid?
+    { raw: "12345",         customerName: "Charlie", total: 15 }, // Silent bug! Duplicate ID
+    { raw: "not-a-number",  customerName: "Diana",   total: 20 }, // Silent bug! Inconsistent format
   ];
 
-  logError(5, "Order ID chaos - duplicates, empty, inconsistent formats", {
-    orders,
-    issue: "Order IDs have no enforced format or uniqueness!",
-  });
+  for (const { raw, customerName, total } of invalidCases) {
+    try {
+      const order: Order = {
+        orderId: createOrderId(raw),
+        customerName,
+        total,
+      };
+      logError(5, "Order ID chaos - duplicates, empty, inconsistent formats", {
+        order,
+        issue: "Order IDs have no enforced format or uniqueness!",
+      });
+    } catch (e: unknown) {
+      console.log(`OrderId "${raw}" correctly rejected:`, (e as Error).message);
+    }
+  }
 }
